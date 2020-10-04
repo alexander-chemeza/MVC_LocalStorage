@@ -252,106 +252,24 @@
                 this.view = view || new View();
             }
 
-            checkInputs(e) {
-                let permission = 0;
-
-                // Check inputs and change permission
-                for (let input of this.view.inputs) {
-                    if (input.value === "") {
-                        permission = 0;
-                    } else {
-                        permission++;
-                    }
-                }
-
-                // Check permission and enable button, if possible
-                if (permission >= this.view.inputs.length) {
-                    this.view.saveButton.disabled = false;
-                } else {
-                    this.view.saveButton.disabled = true;
-                }
+            checkFields() {
+                this.view.check();
             }
 
-            checkStorage(e) {
-                // Check localStorage and then show content
-                let data = localStorage.getItem('userData');
-                if(data) {
-                    this.getInfo();
-                    this.view.clearData.style = "";
-                }
+            save() {
+                this.view.saveData();
             }
 
-            toggleModal(e) {
-                e.preventDefault();
-                // Toggle class name to open / close
-                this.view.modal.classList.toggle("modal_closed");
-                this.view.modalOverlay.classList.toggle("modal_closed");
-                this.clearForm();
+            search() {
+                this.view.show();
             }
 
-            saveData(e) {
-                e.preventDefault();
-                // Deal with localStorage
-                if (typeof localStorage !== "undefined") {
-                    let userData = {
-                        modalInputName: this.view.modalInputName.value,
-                        modalInputDay: this.view.modalInputDay.value,
-                        modalInputMonth: this.view.modalInputMonth.value,
-                        modalInputYear: this.view.modalInputYear.value
-                    }
-
-                    window.localStorage.setItem("userData", JSON.stringify(userData));
-                } else {
-                    console.log("localStorage is not defined and you can try to use cookies");
-                }
-
-                // Close the modal window
-                this.toggleModal(e);
-                
-                // Show content
-                this.getInfo();
-                this.view.clearData.style = "";
+            openClose() {
+                this.view.toggle();
             }
 
-            getInfo() {
-                // Read localStorage
-                let data = JSON.parse(localStorage.getItem("userData"));
-
-                // Make output elements
-                const greeting = document.createElement("p");
-                const birthDay = document.createElement("p");
-
-                // Fill output elements
-                greeting.innerHTML = `Здравствуйте ${data.modalInputName}!`;
-                birthDay.innerHTML = `Ваш день рождения ${data.modalInputDay} / ${data.modalInputMonth} / ${data.modalInputYear}.`;
-
-                // Fill in the output block
-                this.view.modalData[0].append(greeting);
-                this.view.modalData[0].append(birthDay);
-            }
-
-            clearForm() {
-                // Clear all fields
-                this.view.modalInputName.value = "";
-                this.view.modalInputDay.value = "";
-                this.view.modalInputMonth.value = "";
-                this.view.modalInputYear.value = "";
-            }
-
-            clearData(e) {
-                e.preventDefault();
-                // Remove data
-                localStorage.removeItem('userData');
-                // Create feedback
-                const feedback = "Данные пользователя удалены";
-                const message = document.createElement("p");
-                message.innerHTML = feedback;
-                // Clear model-data block
-                while (this.view.modalData[0].firstChild) {
-                    this.view.modalData[0].removeChild(this.view.modalData[0].firstChild);
-                }
-                // Send feedback
-                this.view.modalData[0].append(message);
+            clear() {
+                this.view.clearLocalStorage();
             }
         }
 
@@ -372,6 +290,104 @@
                 this.modalData = document.getElementsByClassName("modal-data");
                 this.clearData = document.getElementById('clear-data');
             }
+
+            toggle() {
+                this.modal.classList.toggle("modal_closed");
+                this.modalOverlay.classList.toggle("modal_closed");
+                this.clearForm();
+            }
+
+            check() {
+                let permission = 0;
+
+                // Check inputs and change permission
+                for (let input of this.inputs) {
+                    if (input.value === "") {
+                        permission = 0;
+                    } else {
+                        permission++;
+                    }
+                }
+
+                // Check permission and enable button, if possible
+                if (permission >= this.inputs.length) {
+                    this.saveButton.disabled = false;
+                } else {
+                    this.saveButton.disabled = true;
+                }
+            }
+
+            clearForm() {
+                // Clear all fields
+                this.modalInputName.value = "";
+                this.modalInputDay.value = "";
+                this.modalInputMonth.value = "";
+                this.modalInputYear.value = "";
+            }
+
+            saveData() {
+                // Deal with localStorage
+                if (typeof localStorage !== "undefined") {
+                    let userData = {
+                        modalInputName: this.modalInputName.value,
+                        modalInputDay: this.modalInputDay.value,
+                        modalInputMonth: this.modalInputMonth.value,
+                        modalInputYear: this.modalInputYear.value
+                    }
+
+                    window.localStorage.setItem("userData", JSON.stringify(userData));
+                } else {
+                    console.log("localStorage is not defined and you can try to use cookies");
+                }
+
+                // Close the modal window
+                this.toggle();
+                
+                // Show content
+                this.getInfo();
+                this.clearData.style = "";
+            }
+
+            getInfo() {
+                // Read localStorage
+                let data = JSON.parse(localStorage.getItem("userData"));
+
+                // Make output elements
+                const greeting = document.createElement("p");
+                const birthDay = document.createElement("p");
+
+                // Fill output elements
+                greeting.innerHTML = `Здравствуйте ${data.modalInputName}!`;
+                birthDay.innerHTML = `Ваш день рождения ${data.modalInputDay} / ${data.modalInputMonth} / ${data.modalInputYear}.`;
+
+                // Fill in the output block
+                this.modalData[0].append(greeting);
+                this.modalData[0].append(birthDay);
+            }
+
+            clearLocalStorage() {
+                // Remove data
+                localStorage.removeItem('userData');
+                // Create feedback
+                const feedback = "Данные пользователя удалены";
+                const message = document.createElement("p");
+                message.innerHTML = feedback;
+                // Clear model-data block
+                while (this.modalData[0].firstChild) {
+                    this.modalData[0].removeChild(this.modalData[0].firstChild);
+                }
+                // Send feedback
+                this.modalData[0].append(message);
+            }
+
+            show() {
+                // Check localStorage and then show content
+                let data = localStorage.getItem('userData');
+                if(data) {
+                    this.getInfo();
+                    this.clearData.style = "";
+                }
+            }
         }
 
         class Controller {
@@ -382,21 +398,43 @@
 
             init() {
                 // Open / cloase modal window
-                this.view.openButton.addEventListener("click", e => this.model.toggleModal(e));
-                this.view.closeButton.addEventListener("click", e => this.model.toggleModal(e));
-                this.view.cancelButton.addEventListener("click", e => this.model.toggleModal(e));
+                this.view.openButton.addEventListener("click", e => {
+                    e.preventDefault();
+                    this.model.openClose();
+                });
+
+                this.view.closeButton.addEventListener("click", e => {
+                    e.preventDefault();
+                    this.model.openClose();
+                });
+
+                this.view.cancelButton.addEventListener("click", e => {
+                    e.preventDefault();
+                    this.model.openClose();
+                });
 
                 // Inputs check
-                document.addEventListener("keyup", e => this.model.checkInputs(e));
+                document.addEventListener("keyup", e => {
+                    e.preventDefault();
+                    this.model.checkFields();
+                });
 
                 // Update localStorage
-                this.view.saveButton.addEventListener("click", e => this.model.saveData(e));
+                this.view.saveButton.addEventListener("click", e => {
+                    e.preventDefault();
+                    this.model.save();
+                });
 
                 // Clear localStorage
-                this.view.clearData.addEventListener('click', e => this.model.clearData(e));
+                this.view.clearData.addEventListener("click", e => {
+                    e.preventDefault();
+                    this.model.clear();
+                });
 
                 // Read localStorage
-                document.addEventListener("DOMContentLoaded", e => this.model.checkStorage(e));
+                document.addEventListener("DOMContentLoaded", () => {
+                    this.model.search();
+                });
             }
         }
 
